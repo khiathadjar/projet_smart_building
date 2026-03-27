@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-key="nav_settings">Paramètres - IntelliBuild</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-overlay: rgba(15, 23, 42, 0.48);
+      --sidebar-bg: rgba(0, 0, 0, 0.92);
+      --text-light: #ffffff;
+      --hover-bg: rgba(16, 185, 129, 0.18);
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(var(--bg-overlay), var(--bg-overlay)),
+        url("https://images.pexels.com/photos/4040649/pexels-photo-4040649.jpeg") no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+    }
+
+    /* --- SIDEBAR HARMONISÉE --- */
+    .sidebar {
+      width: 280px; background: var(--sidebar-bg); color: var(--text-light);
+      padding: 24px; display: flex; flex-direction: column; justify-content: space-between; 
+      min-height: 100vh; position: fixed; z-index: 50;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; }
+    .logo img { width: 40px; }
+    .sidebar nav a {
+      display: block; padding: 13px 14px; margin: 10px 0; text-decoration: none; color: var(--text-light);
+      border-radius: 10px; transition: background 0.25s ease; cursor: pointer;
+    }
+    .sidebar nav a:hover, .sidebar nav .nav-active { background: var(--hover-bg); }
+    .sidebar nav .nav-active { box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.45); background: var(--hover-bg); }
+
+    /* --- PROFIL DROPDOWN --- */
+    .avatar {
+      width: 42px; height: 42px; background: #1f9d55; color: var(--text-light);
+      border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold; border: none;
+    }
+    .dropdown {
+      display: none; position: absolute; right: 0; top: 55px; background: rgba(255, 255, 255, 0.96);
+      padding: 15px; border-radius: 15px; width: 200px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); z-index: 100;
+    }
+    .dropdown.open { display: block; }
+    .dropdown a { display: block; padding: 10px; text-decoration: none; color: #0f172a; border-radius: 8px; font-size: 14px; }
+    .dropdown a:hover { background: #e8fce9; }
+
+    /* --- CONTENU --- */
+    .main-content { margin-left: 280px; padding: 40px; display: flex; justify-content: center; }
+    .panel {
+      width: min(700px, 100%);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+    
+    /* --- OVERLAY --- */
+    .overlay-modal { position: fixed; inset: 0; display: grid; place-items: center; z-index: 1200; }
+    .overlay-modal[hidden] { display: none; }
+    .overlay-backdrop { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.66); backdrop-filter: blur(3px); }
+    .overlay-panel {
+      position: relative; width: min(500px, 90%); background: white; padding: 25px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body class="flex">
+
+  <aside class="sidebar">
+    <div>
+      <div class="logo">
+        <img src="Sans%20titre-2.png" alt="Logo">
+        <h2 class="text-xl font-bold">IntelliBuild</h2>
+      </div>
+      <nav>
+        <a href="user.html" data-key="nav_dashboard">Dashboard</a>
+        <a href="user.html#objectsSection" data-key="nav_objects">Objets</a>
+        <a href="localisations.html" data-key="nav_locations">Localisations</a>
+        <a href="#" id="openHistoryOverlay" data-key="nav_history">Historique</a>
+        <a href="#" id="openRoleOverlay" data-key="nav_role">Role</a>
+        <a href="parametres.html" class="nav-active" data-key="nav_settings">Paramètres</a>
+      </nav>
+    </div>
+  </aside>
+
+  <div class="flex-1">
+    <header class="flex justify-end p-6">
+      <div class="relative">
+        <button class="avatar" id="profileButton">U</button>
+        <div class="dropdown" id="menu">
+          <strong id="menuName" class="block mb-2 text-gray-800 text-sm">Utilisateur</strong>
+          <hr class="mb-2">
+          <a href="#" id="openProfileOverlay" data-key="menu_profile">Mon profil</a>
+          <a href="#" id="logoutLink" class="text-red-600 font-bold" data-key="logout">Déconnexion</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="panel">
+        <h1 class="text-3xl font-black mb-8 text-slate-800" data-key="nav_settings">Paramètres</h1>
+
+        <div class="card">
+          <p class="font-bold text-slate-700 mb-3" data-key="lang_title">Langue du système</p>
+          <select id="langSelect" class="w-full max-w-xs p-3 border border-slate-200 rounded-xl bg-slate-50 font-semibold focus:ring-2 focus:ring-emerald-500 outline-none">
+            <option value="fr">Français (FR)</option>
+            <option value="en">English (EN)</option>
+            <option value="ar">العربية (AR)</option>
+          </select>
+          <p class="text-sm text-slate-500 mt-3 italic" id="langNote">Langue active : FR</p>
+        </div>
+
+        <div class="card border-l-4 border-l-red-500">
+          <p class="font-bold text-slate-700 mb-2" data-key="account_title">Sécurité du compte</p>
+          <p class="text-sm text-slate-500 mb-4">Mettre fin à la session actuelle en toute sécurité.</p>
+          <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg" id="logoutBtn" data-key="logout">
+            Déconnexion
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="overlay-modal" id="infoOverlay" hidden>
+    <div class="overlay-backdrop" id="overlayBackdrop"></div>
+    <div class="overlay-panel">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold" id="overlayTitle">Détails</h3>
+        <button id="overlayClose" class="text-2xl">&times;</button>
+      </div>
+      <div id="overlayBody" class="text-slate-600"></div>
+    </div>
+  </div>
+
+  <script src="translations.js"></script>
+  <script>
+    // --- AUTH CHECK ---
+    if (!localStorage.getItem("userToken")) window.location.href = "login.html";
+
+    // --- ELEMENTS ---
+    const profileButton = document.getElementById("profileButton");
+    const menu = document.getElementById("menu");
+    const menuName = document.getElementById("menuName");
+    const langSelect = document.getElementById("langSelect");
+    const langNote = document.getElementById("langNote");
+    const infoOverlay = document.getElementById('infoOverlay');
+    const overlayBody = document.getElementById('overlayBody');
+    const overlayTitle = document.getElementById('overlayTitle');
+
+    // --- PROFIL MENU ---
+    profileButton.onclick = () => menu.classList.toggle("open");
+    document.onclick = (e) => { if(!profileButton.contains(e.target) && !menu.contains(e.target)) menu.classList.remove("open"); };
+
+    const email = localStorage.getItem("userEmail") || "Utilisateur";
+    menuName.textContent = email.split('@')[0];
+    profileButton.textContent = menuName.textContent[0].toUpperCase();
+
+    // --- LANGUE ---
+    function tr(key, fallback) {
+      const locale = (localStorage.getItem("lang") || "fr").toLowerCase();
+      return (window.translations && translations[locale] && translations[locale][key]) || fallback;
+    }
+
+    function applyLanguage(lang) {
+      const locale = (lang || "fr").toLowerCase();
+      localStorage.setItem("lang", locale);
+      langSelect.value = locale;
+      document.documentElement.lang = locale;
+      langNote.textContent = `${tr("lang_active", "Langue active")} : ${locale.toUpperCase()}`;
+      if (window.setLang) setLang(locale);
+    }
+
+    langSelect.onchange = () => applyLanguage(langSelect.value);
+
+    // --- OVERLAYS ---
+    function openOverlay(title, html) {
+      overlayTitle.textContent = title;
+      overlayBody.innerHTML = html;
+      infoOverlay.hidden = false;
+    }
+    const closeOverlay = () => infoOverlay.hidden = true;
+
+    document.getElementById('openRoleOverlay').onclick = (e) => { e.preventDefault(); openOverlay("Mon Rôle", "<p>Vous disposez des accès <strong>Utilisateur</strong> standard.</p>"); };
+    document.getElementById('openHistoryOverlay').onclick = (e) => { e.preventDefault(); openOverlay("Historique", "<p>Aucune activité récente pour le moment.</p>"); };
+    document.getElementById('openProfileOverlay').onclick = (e) => { e.preventDefault(); openOverlay("Mon Profil", `<p>Email: ${email}</p>`); menu.classList.remove("open"); };
+    
+    document.getElementById('overlayClose').onclick = closeOverlay;
+    document.getElementById('overlayBackdrop').onclick = closeOverlay;
+
+    // --- LOGOUT ---
+    const logoutAction = (e) => {
+      e.preventDefault();
+      localStorage.clear();
+      window.location.href = "login.html";
+    };
+    document.getElementById("logoutBtn").onclick = logoutAction;
+    document.getElementById("logoutLink").onclick = logoutAction;
+
+    applyLanguage(localStorage.getItem("lang") || "fr");
+  </script>
+</body>
+</html>

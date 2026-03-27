@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-key="p1_doc_title">IntelliBuild - User</title>
+<style>
+:root {
+  --bg-overlay: rgba(15, 23, 42, 0.48);
+  --sidebar-bg: rgba(0, 0, 0, 0.92);
+  --text-light: #ffffff;
+  --main-glass-bg: rgba(255, 255, 255, 0.78);
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --hover-bg: rgba(16, 185, 129, 0.18);
+  --status-ok-bg: #dcfce7;
+  --status-ok-text: #065f46;
+  --status-off-bg: #ffe4e6;
+  --status-off-text: #be123c;
+  --history-accent: #0f766e;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 16px;
+  background: linear-gradient(var(--bg-overlay), var(--bg-overlay)),
+    url("https://images.pexels.com/photos/4040649/pexels-photo-4040649.jpeg") no-repeat center center fixed;
+  background-size: cover;
+  color: #0f1720;
+}
+.container { display: flex; min-height: 100vh; width: min(1500px, 100%); margin: 0 auto; }
+.sidebar {
+  width: 280px; background: var(--sidebar-bg); color: var(--text-light);
+  padding: 24px; display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo img { width: 40px; }
+.sidebar nav a {
+  display: block; padding: 13px 14px; margin: 10px 0; text-decoration: none; color: var(--text-light);
+  border-radius: 10px; transition: background 0.25s ease; cursor: pointer;
+}
+.sidebar nav a:hover, .sidebar nav .nav-active { background: var(--hover-bg); }
+.sidebar nav .nav-active { box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.45); }
+.sidebar-bottom { display: grid; gap: 12px; }
+.lang { background: rgba(255, 255, 255, 0.08); padding: 10px; border-radius: 10px; }
+.lang-title { margin-bottom: 8px; font-size: 13px; font-weight: 700; }
+.lang-select {
+  width: 100%; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(17, 24, 39, 0.9); color: var(--text-light);
+  border-radius: 8px; padding: 10px; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+.lang-note { margin-top: 8px; margin-bottom: 0; font-size: 11px; opacity: 0.88; }
+
+.main { flex: 1; padding: 30px; }
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.search {
+  width: min(100%, 560px); padding: 14px 16px; border-radius: 25px; border: none; outline: none;
+  background: rgba(255, 255, 255, 0.9); box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12); font-size: 15px;
+}
+.profile { position: relative; }
+.avatar {
+  width: 52px; height: 52px; background: #1f9d55; color: var(--text-light);
+  border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold; border: none;
+}
+.dropdown {
+  display: none; position: absolute; right: 0; top: 60px; background: rgba(255, 255, 255, 0.96);
+  padding: 15px; border-radius: 15px; width: 200px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); z-index: 20;
+}
+.dropdown.open { display: block; }
+.dropdown a { display: block; padding: 10px; text-decoration: none; color: #0f172a; border-radius: 8px; }
+.dropdown a:hover { background: #e8fce9; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin: 24px 0; }
+.card {
+  background: var(--card-bg); backdrop-filter: blur(10px); padding: 24px; border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.45); box-shadow: 0 16px 30px rgba(15, 23, 42, 0.16);
+}
+.card h3 { margin: 0; font-size: 19px; }
+.card p { margin: 10px 0 0; font-size: 26px; font-weight: 800; }
+
+.table-box {
+  background: var(--main-glass-bg); backdrop-filter: blur(10px); border-radius: 22px; padding: 24px;
+  overflow-x: auto; border: 1px solid rgba(255, 255, 255, 0.45); box-shadow: 0 18px 34px rgba(15, 23, 42, 0.2);
+}
+.section-head { margin: 0 0 14px; font-size: 24px; color: #0f1720; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 17px; text-align: left; font-size: 15px; }
+tbody tr:hover { background: rgba(16, 185, 129, 0.1); }
+
+.badge { display: inline-block; padding: 6px 12px; border-radius: 12px; font-weight: 600; }
+.status-active { background: #dcfce7; color: #065f46; }
+.status-inactive { background: #ffe4e6; color: #be123c; }
+
+.overlay-modal { position: fixed; inset: 0; display: grid; place-items: center; z-index: 1200; }
+.overlay-modal[hidden] { display: none; }
+.overlay-backdrop { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.66); backdrop-filter: blur(3px); }
+.overlay-panel {
+  position: relative; width: min(980px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto;
+  border-radius: 22px; padding: 24px; background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 24px 55px rgba(2, 6, 23, 0.35); border: 1px solid rgba(148, 163, 184, 0.25);
+}
+.overlay-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.overlay-title { margin: 0; font-size: 22px; color: #0f172a; }
+.overlay-close {
+  border: none; width: 36px; height: 36px; border-radius: 999px; background: #e2e8f0; color: #0f172a; font-size: 18px; cursor: pointer;
+}
+.overlay-close:hover { background: #cbd5e1; }
+
+@media (max-width: 900px) {
+  .container { flex-direction: column; width: 100%; }
+  .sidebar { width: 100%; }
+  .main { padding: 18px; }
+  .topbar { flex-direction: column; align-items: stretch; }
+  .profile { align-self: flex-end; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="sidebar">
+    <div>
+      <div class="logo">
+        <img src="Sans titre-2.png" alt="Logo IntelliBuild">
+        <h2 data-key="brand">IntelliBuild</h2>
+      </div>
+
+      <nav id="sideNav">
+        <a href="#" class="nav-active" data-key="nav_dashboard">Dashboard</a>
+        <a href="#" id="openObjectsSection" data-key="nav_objects">Objets</a>
+        <a href="localisations-user.html" data-key="nav_locations">Localisations</a>
+        <a href="#" id="openHistoryOverlay" data-key="nav_history">Historique</a>
+        <a href="#" id="openRoleOverlay" data-key="nav_role">Role</a>
+        <a href="parametres-user.html" data-key="nav_settings">Parametres</a>
+      </nav>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="lang">
+        <div class="lang-title" data-key="lang_title">Langue</div>
+        <select class="lang-select" id="langSelect" aria-label="Choisir la langue">
+          <option value="fr">FR</option>
+          <option value="en">EN</option>
+          <option value="ar">AR</option>
+        </select>
+        <p class="lang-note">Langue active: FR</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <input id="mainSearch" class="search" type="search" placeholder="Rechercher un objet..." data-key="search_objects" data-attr="placeholder" aria-label="Rechercher un objet">
+      <div class="profile">
+        <button class="avatar" id="profileButton" type="button" aria-haspopup="menu" aria-controls="menu" aria-expanded="false">A</button>
+        <div class="dropdown" id="menu" role="menu" aria-labelledby="profileButton">
+          <strong id="menuName">Amel Amiri</strong>
+          <hr>
+          <a href="#" role="menuitem" id="openProfileOverlay" data-key="menu_profile">Mon profil</a>
+          <a href="#" role="menuitem" id="logoutLink" data-key="logout">Deconnexion</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card"><h3 data-key="stat_total">Total</h3><p id="statTotal">0</p></div>
+      <div class="card"><h3 data-key="stat_active">Actifs</h3><p id="statActifs">0</p></div>
+      <div class="card"><h3 data-key="stat_inactive">Inactifs</h3><p id="statInactifs">0</p></div>
+    </div>
+
+    <div class="table-box" id="objectsSection">
+      <h3 class="section-head" data-key="user_recent_objects">Objets recents</h3>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col" data-key="table_name">Nom</th>
+            <th scope="col" data-key="table_type">Type</th>
+            <th scope="col" data-key="table_location">Localisation</th>
+            <th scope="col">Distance</th>
+            <th scope="col" data-key="table_status">Statut</th>
+          </tr>
+        </thead>
+        <tbody id="objectsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="overlay-modal" id="infoOverlay" hidden aria-hidden="true">
+  <div class="overlay-backdrop" id="overlayBackdrop"></div>
+  <div class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="overlayTitle">
+    <div class="overlay-header">
+      <h3 class="overlay-title" id="overlayTitle">Details</h3>
+      <button class="overlay-close" id="overlayClose" type="button" aria-label="Fermer">x</button>
+    </div>
+    <div class="overlay-body" id="overlayBody"></div>
+  </div>
+</div>
+
+<script src="translations.js"></script>
+<script>
+const profileButton = document.getElementById("profileButton");
+const menu = document.getElementById("menu");
+const menuName = document.getElementById("menuName");
+const openProfileOverlay = document.getElementById("openProfileOverlay");
+const logoutLink = document.getElementById("logoutLink");
+const langSelect = document.getElementById("langSelect");
+const langNote = document.querySelector(".lang-note");
+const objectsBody = document.getElementById("objectsBody");
+const mainSearch = document.getElementById("mainSearch");
+const openObjectsSection = document.getElementById("openObjectsSection");
+const objectsSection = document.getElementById("objectsSection");
+const openHistoryOverlay = document.getElementById("openHistoryOverlay");
+const openRoleOverlay = document.getElementById("openRoleOverlay");
+const infoOverlay = document.getElementById("infoOverlay");
+const overlayBackdrop = document.getElementById("overlayBackdrop");
+const overlayClose = document.getElementById("overlayClose");
+const overlayTitle = document.getElementById("overlayTitle");
+const overlayBody = document.getElementById("overlayBody");
+const statTotal = document.getElementById("statTotal");
+const statActifs = document.getElementById("statActifs");
+const statInactifs = document.getElementById("statInactifs");
+const apiBase = "http://127.0.0.1:8000";
+const userToken = localStorage.getItem("userToken");
+let historyEntries = [];
+let selectedObjectDetails = null;
+let userProfileData = null;
+
+if (!userToken) window.location.href = "login.html";
+
+function tr(key, fallback) {
+  const locale = (localStorage.getItem("lang") || "fr").toLowerCase();
+  if (typeof translations !== "undefined" && translations[locale] && translations[locale][key] !== undefined) {
+    return translations[locale][key];
+  }
+  return fallback;
+}
+
+function getAuthHeaders() {
+  return {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${userToken}`
+  };
+}
+
+function toStatusCode(statusValue) {
+  const raw = String(statusValue || "").toLowerCase().trim();
+  if (["active", "actif", "disponible"].includes(raw)) return "active";
+  if (["inactive", "inactif", "hors-ligne", "hors ligne"].includes(raw)) return "inactive";
+  return "inactive";
+}
+
+function toggleMenu() {
+  const isOpen = menu.classList.toggle("open");
+  profileButton.setAttribute("aria-expanded", String(isOpen));
+}
+function closeMenu() {
+  menu.classList.remove("open");
+  profileButton.setAttribute("aria-expanded", "false");
+}
+function openOverlay(title, htmlContent) {
+  overlayTitle.textContent = title;
+  overlayBody.innerHTML = htmlContent;
+  infoOverlay.hidden = false;
+  infoOverlay.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  overlayClose.focus();
+}
+function closeOverlay() {
+  infoOverlay.hidden = true;
+  infoOverlay.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+async function loadUserProfile() {
+  try {
+    const response = await fetch(`${apiBase}/user/profile`, { method: "GET", headers: getAuthHeaders() });
+    if (!response.ok) return;
+    const profile = await response.json();
+    userProfileData = profile;
+    const email = profile.email || localStorage.getItem("userEmail") || "user@intellibuild.com";
+    const emailName = email.split("@")[0].replace(/[._-]+/g, " ").trim();
+    const displayName = emailName ? emailName.replace(/\b\w/g, c => c.toUpperCase()) : "Utilisateur";
+    menuName.textContent = displayName;
+    profileButton.textContent = (displayName[0] || "U").toUpperCase();
+  } catch (error) { console.error("Erreur profil:", error); }
+}
+
+async function loadUserHistory() {
+  try {
+    const response = await fetch(`${apiBase}/user/history`, { method: "GET", headers: getAuthHeaders() });
+    if (!response.ok) { historyEntries = []; return; }
+    const data = await response.json();
+    historyEntries = Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("Erreur historique:", error);
+    historyEntries = [];
+  }
+}
+
+async function logUserAction(action, detail, status) {
+  try {
+    await fetch(`${apiBase}/user/history`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ action, detail, status })
+    });
+  } catch (error) { console.error("Erreur log historique:", error); }
+}
+
+async function loadUserThings(query) {
+  try {
+    const user_room = localStorage.getItem('user_room') || '';
+    const user_x = Number(localStorage.getItem('user_x') || 0);
+    const user_y = Number(localStorage.getItem('user_y') || 0);
+    const user_z = Number(localStorage.getItem('user_z') || 0);
+
+    const response = await fetch(`${apiBase}/things/search`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
+        search_query: query || "",
+        user_room,
+        user_x,
+        user_y,
+        user_z
+      })
+    });
+
+    if (!response.ok) return;
+
+    const items = await response.json();
+    const list = Array.isArray(items) ? items : [];
+
+    objectsBody.innerHTML = list.map(function (item) {
+      const statusCode = toStatusCode(item.status);
+      const statusClass = statusCode === "active" ? "status-active" : "status-inactive";
+      const statusText = statusCode === "active" ? tr("status_active_label", "Active") : tr("status_inactive_label", "Inactive");
+      const distanceText = item.same_room ? "0m (MÊME SALLE)" : `${Math.round(Number(item.distance || 0))}m`;
+
+      return `
+        <tr class="object-row" tabindex="0" role="button" aria-label="Voir le detail de ${item.name || "objet"}">
+          <td>${item.name || "-"}</td>
+          <td>${item["@type"] || item.type || "-"}</td>
+          <td>${item.location?.room || item.location || "-"}</td>
+          <td>${distanceText}</td>
+          <td><span class="badge ${statusClass}" data-status="${statusCode}">${statusText}</span></td>
+        </tr>
+      `;
+    }).join("");
+
+    refreshStats();
+  } catch (error) {
+    console.error("Erreur objets:", error);
+  }
+}
+
+function refreshStats() {
+  const visibleRows = Array.from(objectsBody.querySelectorAll(".object-row")).filter(row => row.style.display !== "none");
+  const total = visibleRows.length;
+  const actifs = visibleRows.filter(row => {
+    const badge = row.querySelector("[data-status]");
+    return badge && badge.getAttribute("data-status") === "active";
+  }).length;
+  const inactifs = total - actifs;
+  statTotal.textContent = String(total);
+  statActifs.textContent = String(actifs);
+  statInactifs.textContent = String(inactifs);
+}
+
+profileButton.addEventListener("click", toggleMenu);
+document.addEventListener("click", (event) => {
+  if (!(menu.contains(event.target) || profileButton.contains(event.target))) closeMenu();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeMenu();
+    if (!infoOverlay.hidden) closeOverlay();
+  }
+});
+
+mainSearch.addEventListener("input", () => loadUserThings(mainSearch.value));
+openObjectsSection.addEventListener("click", async (event) => {
+  event.preventDefault();
+  await loadUserThings(mainSearch.value || "");
+  objectsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+openHistoryOverlay.addEventListener("click", async (event) => {
+  event.preventDefault();
+  await loadUserHistory();
+  openOverlay("Historique utilisateur", "<p>Historique chargé.</p>");
+});
+openRoleOverlay.addEventListener("click", (event) => {
+  event.preventDefault();
+  openOverlay("Role utilisateur", "<p>Role: User</p>");
+});
+openProfileOverlay.addEventListener("click", async (event) => {
+  event.preventDefault();
+  await loadUserProfile();
+  closeMenu();
+  openOverlay("Mon profil", `<p>${menuName.textContent}</p>`);
+});
+
+overlayBackdrop.addEventListener("click", closeOverlay);
+overlayClose.addEventListener("click", closeOverlay);
+
+logoutLink.addEventListener("click", function (event) {
+  event.preventDefault();
+  localStorage.removeItem("userToken");
+  localStorage.removeItem("userRole");
+  localStorage.removeItem("userEmail");
+  window.location.href = "login.html";
+});
+
+loadUserProfile();
+loadUserThings("");
+loadUserHistory();
+logUserAction("Connexion", "Session utilisateur ouverte", "Succes");
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title data-key="login_doc_title">Connexion – IntelliBuild</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+
+<header class="topbar">
+  <h2>
+    <div class="logo">
+      <img class="brand-logo-lg" src="Sans%20titre-2.png" alt="IntelliBuild">
+      <span data-key="brand">IntelliBuild</span>
+    </div>
+  </h2>
+  <div class="right">
+    <select class="lang">
+      <option value="fr">FR</option>
+      <option value="en">EN</option>
+      <option value="ar">AR</option>
+    </select>
+    <a href="p1.html" class="btn outline" data-key="nav_home">Accueil</a>
+  </div>
+</header>
+
+<section class="auth-container">
+  <div class="auth-box">
+    <h2 data-key="login_title">Connexion</h2>
+    <p data-key="login_sub">Accédez à votre plateforme Smart Building</p>
+
+    <form id="loginForm">
+      <label data-key="label_email">Email</label>
+      <input id="loginEmail" type="email" placeholder="exemple@mail.com" data-key="ph_email" data-attr="placeholder" required>
+
+      <label data-key="label_password">Mot de passe</label>
+      <input id="loginPassword" type="password" placeholder="••••••••" data-key="ph_password" data-attr="placeholder" required>
+
+      <button type="submit" class="login-btn" data-key="btn_signin">Se connecter</button>
+      <button type="button" class="forgot-btn" id="forgotBtn" data-key="forgot_password">Mot de passe oublié ?</button>
+    </form>
+  </div>
+  
+</section>
+
+<footer class="site-footer">
+  <div class="brand">
+    <img src="Sans%20titre-2.png" alt="IntelliBuild">
+    <span>IntelliBuild</span>
+  </div>
+  <div>(c) 2026 IntelliBuild. All rights reserved.</div>
+</footer>
+
+<script src="translations.js"></script>
+<script>
+  document.getElementById('forgotBtn').addEventListener('click', async () => {
+    const field = document.getElementById('loginEmail');
+    const email = (field.value || prompt('Entrez votre email pour reinitialiser le mot de passe:') || '').trim();
+    if (!email) return;
+    try {
+      const res = await fetch('http://127.0.0.1:8000/auth/forgot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.detail || 'Erreur lors de la demande');
+        return;
+      }
+      alert('Un email de reinitialisation a ete envoye.');
+    } catch (error) {
+      alert('Erreur de connexion au serveur.');
+    }
+  });
+
+    document.getElementById('loginForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                const token = result.access_token || (result.session && result.session.access_token);
+              const role = result.role || "user";
+                localStorage.setItem('userToken', token);
+              localStorage.setItem('userRole', role);
+              localStorage.setItem('userEmail', result.email || email);
+                alert("Connexion réussie !");
+              if (role === "admin") {
+                window.location.href = "index.html";
+              } else {
+                window.location.href = "user.html";
+              }
+            } else {
+                alert("Erreur : " + (result.detail || "Identifiants incorrects"));
+            }
+        } catch (error) {
+            alert("Erreur de connexion au serveur.");
+        }
+    });
+</script>
+</body>
+</html>
