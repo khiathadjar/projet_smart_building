@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+ENV/
+.git/
+.idea/
+.vscode/
+build/
+dist/
+downloads/
+node_modules/
+bdd.env
